@@ -5,15 +5,16 @@ package com.example.memeapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 
 import com.bumptech.glide.Glide
 
 import com.example.memeapp.databinding.ActivityMainBinding
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,32 +28,26 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun getNews() {
-        val news : Call<Meme> = NewsService.newsInstance.getHeadlines()
 
-        news.enqueue(object : Callback<Meme>{
+    private fun getNews(){
+      lifecycleScope.launch{
+          try {
+              val meme : Meme = NewsService.newsInstance.getHeadlines()
 
-            override fun onResponse(call: Call<Meme>, response: Response<Meme>) {
-                val meme = response.body()
-                if(meme != null){
-                    Log.d("MainActivity","gotcha${meme.author}")
-//                    adapter = NewsAdapter(this@MainActivity,meme)
-//                    binding.newsList.adapter = adapter
-//
-//                    binding.newsList.layoutManager = LinearLayoutManager(this@MainActivity)
-                    binding.newsTitle.text = meme.title
+              Log.d("MainActivity","gotcha${meme.author}")
+
+              binding.newsTitle.text = meme.title
                     binding.newsDescription.text = meme.author
 
                     Glide.with(this@MainActivity).load(meme.url).into(binding.newsImage)
 
-                }
-            }
+          }catch (e: Exception){
+              Toast.makeText(applicationContext,"Bruh!! failed!! because ${e.toString()} ",Toast.LENGTH_LONG)
+          }
 
-            override fun onFailure(call: Call<Meme>, t: Throwable) {
-                Log.d("MainActivity","failed bruh!!")
-            }
-
-        } )
+      }
     }
+
+
 
 }
